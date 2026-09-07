@@ -1,5 +1,7 @@
 # Cirro
 
+[Web4 Link](https://in-info-web4.luddy.indianapolis.iu.edu/~vanrobbi/N423/Cirro/)
+
 A weather app that answers one question: **is it going to rain, and when does it stop?**
 
 Native JavaScript, Sass with BEM, no framework and no bundler. Works on desktop
@@ -14,12 +16,12 @@ npm run serve      # http://localhost:3000
 ES modules need `http://`, not `file://` — opening `index.html` directly will
 appear broken. Use `npm run serve`.
 
-| Script | Does |
-|---|---|
+| Script          | Does                     |
+| --------------- | ------------------------ |
 | `npm run build` | Compile Sass, compressed |
-| `npm run dev` | Recompile Sass on change |
-| `npm run serve` | Static server |
-| `npm test` | Vitest, 47 tests |
+| `npm run dev`   | Recompile Sass on change |
+| `npm run serve` | Static server            |
+| `npm test`      | Vitest, 47 tests         |
 
 ## Data
 
