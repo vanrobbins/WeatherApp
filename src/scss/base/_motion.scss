@@ -1,0 +1,185 @@
+@use '../abstracts' as *;
+
+// Ambient loops keep the icons live. Durations come from the canvas motion spec.
+// The global reduced-motion rule in _reset.scss neutralises every one of these
+// ("loops hold frame 1"), so nothing here needs its own guard.
+//
+// Keyframes are transcribed from board section 09 — "ANIMATION REFERENCE, EVERY
+// KEYFRAME IN THE SYSTEM" — rather than re-invented, so a drop falls the same
+// distance here as it does on the canvas.
+
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes drift { 0%, 100% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }
+
+// Board: 0 -6px/opacity 0 -> 25% opaque -> 100% +14px/opacity 0. The drop
+// travels well past the cloud rather than fading at the halfway mark.
+@keyframes fall  { 0%   { opacity: 0; transform: translateY(-6px); }
+                   25%  { opacity: 1; }
+                   100% { opacity: 0; transform: translateY(14px); } }
+
+// Board 07: "3.4s, two strikes". The previous four-dip version read as a
+// flicker; this is a strike, a recovery, and a weaker second strike.
+@keyframes flash { 0%, 86%, 100% { opacity: .7; transform: scale(1); }
+                   90%           { opacity: 1;  transform: scale(1.08); }
+                   94%           { opacity: .8; transform: scale(1); }
+                   97%           { opacity: 1;  transform: scale(1.05); } }
+
+// Board 07: "live ring, 2.4s, opacity .35 -> .9".
+@keyframes pulse { 0%, 100% { opacity: .35; } 50% { opacity: .9; } }
+
+// Board starts the bar at scaleY(.05), not 0 — a bar that begins at zero
+// height disappears entirely on frame 1, which is exactly how the empty rain
+// strip came to look broken.
+@keyframes bar-rise { from { transform: scaleY(.05); } to { transform: scaleY(1); } }
+@keyframes fade-up  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.wx {
+  &__sun {
+    transform-origin: 44px 16px;
+    animation: spin motion('sun-spin') linear infinite;
+  }
+
+  // The large clear-day sun spins about the icon centre, not the inset disc.
+  &--clear &__sun { transform-origin: 32px 32px; }
+
+  &__cloud { animation: drift motion('cloud-drift') ease-in-out infinite; }
+
+  &__drops line,
+  &__flakes g {
+    animation: fall motion('rain-fall') linear infinite;
+    // Each drop is offset so they do not fall in lockstep.
+    animation-delay: calc(var(--i, 0) * 0.4s);
+  }
+
+  &__fog line {
+    animation: drift calc(#{motion('cloud-drift')} * 1.4) ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * 0.5s);
+  }
+
+  &__bolt { animation: flash motion('bolt-flash') linear infinite; }
+}
+
+// -- Live ring ----------------------------------------------------------------
+// The board's one "this reading is live" mark: a solid dot inside a hairline
+// ring that breathes. It sits against the rain claim, which is the only line on
+// the screen that goes stale on its own.
+
+.live-ring {
+  flex: none;
+  color: var(--ink);
+
+  &__halo { animation: pulse motion('live-ring') ease-in-out infinite; }
+}
+
+.screen[data-screen] { animation: fade-up 0.5s $ease-rise both; }
+
+// -- Page transitions, by weather ---------------------------------------------
+// Board section 11. An opaque sheet, never a cross-fade — the arriving screen
+// is the sheet, painted on the ground so there is nothing to see behind it.
+// Direction is the tell: wind pushes sideways, rain falls, sun opens outward
+// from where the sun sits, lightning does not travel at all.
+
+@keyframes cover-right { from { transform: translateX(100.5%); } to { transform: translateX(0); } }
+@keyframes cover-down  { from { transform: translateY(-100.5%); } to { transform: translateY(0); } }
+
+// The sun sits high and to the right in every icon in this system, and the
+// iris opens from exactly there.
+@keyframes cover-iris {
+  from { clip-path: circle(0% at 76% 26%); }
+  to   { clip-path: circle(142% at 76% 26%); }
+}
+
+// Lightning does not travel. A beat of nothing, then the screen is simply there.
+@keyframes cover-cut { 0%, 18% { opacity: 0; } 19%, 100% { opacity: 1; } }
+
+@keyframes lead-rake { 0% { opacity: 0; } 18% { opacity: 1; } 76%, 100% { opacity: 0; } }
+@keyframes raindrop  { from { transform: translateY(-70px); opacity: 0; }
+                       12%, 88% { opacity: 1; }
+                       to { transform: translateY(150px); opacity: 0; } }
+@keyframes bolt-cut  { 0%, 6% { opacity: 0; } 8% { opacity: .95; } 10% { opacity: .06; }
+                       12% { opacity: .7; } 16%, 100% { opacity: 0; } }
+
+.screen[data-move] {
+  position: relative;
+  z-index: 1;
+  // Opaque, or it is a cross-fade.
+  background: var(--ground);
+  animation-duration: var(--dur-move, #{motion('transition')});
+  animation-fill-mode: both;
+  will-change: transform, opacity, clip-path;
+
+  &[data-move='gust'] {
+    animation-name: cover-right;
+    animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+
+  &[data-move='fall'] {
+    animation-name: cover-down;
+    animation-timing-function: cubic-bezier(0.32, 0.86, 0.28, 1);
+  }
+
+  &[data-move='iris'] {
+    animation-name: cover-iris;
+    animation-timing-function: cubic-bezier(0.32, 0.86, 0.28, 1);
+  }
+
+  &[data-move='flash'] {
+    animation-name: cover-cut;
+    animation-timing-function: linear;
+  }
+}
+
+// The flourish that rakes ahead of the leading edge. It rides inside the sheet,
+// so it travels with it for free.
+.sheet-lead {
+  position: absolute;
+  pointer-events: none;
+  overflow: hidden;
+  animation: lead-rake var(--dur-move, #{motion('transition')}) ease both;
+
+  span {
+    position: absolute;
+    background: var(--ink);
+    // The board's four opacities, cycling. Set per streak in transition.js —
+    // deriving them in calc() means reaching for floor(), which Sass claims
+    // as its own function before the browser ever sees it.
+    opacity: var(--o, 0.5);
+  }
+
+  // Nine streaks raking off the left edge, ahead of a sheet coming from the right.
+  &--gust {
+    top: 0;
+    bottom: 0;
+    left: -180px;
+    width: 180px;
+
+    span {
+      right: calc(var(--i) * 10px);
+      top: calc(46px + var(--i) * 32px);
+      height: 1.5px;
+    }
+  }
+
+  // A curtain of drops below a sheet coming down.
+  &--fall {
+    left: 0;
+    right: 0;
+    bottom: -150px;
+    height: 150px;
+
+    span {
+      left: calc(4% + var(--i) * 8%);
+      top: calc(var(--i) * 2px);
+      width: 1.5px;
+      animation: raindrop calc(var(--dur-move, #{motion('transition')}) * 0.75)
+                 linear calc(var(--i) * 55ms) infinite;
+    }
+  }
+
+  // The strike itself: the sheet does not move, so this is the whole event.
+  &--flash {
+    inset: 0;
+    background: var(--ink);
+    animation: bolt-cut var(--dur-move, #{motion('transition')}) linear both;
+  }
+}

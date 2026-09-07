@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cirro — Rain, to the quarter hour</title>
+  <meta name="description" content="A forecast that answers the only question you asked.">
+  <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <!-- Self-hosted fonts (see src/scss/base/_fonts.scss). Preloaded so the face
+       is ready near first paint and the swap doesn't shift layout. -->
+  <link rel="preload" href="fonts/plus-jakarta-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===================================================================== -->
+  <!-- Header. Present on every screen; the place tabs only on the forecast. -->
+  <!-- ===================================================================== -->
+  <header class="site-header" data-header>
+    <a class="site-header__mark" href="#/" data-nav-home>Cirro</a>
+
+    <nav class="place-tabs" aria-label="Saved places" data-place-tabs hidden>
+      <ul class="place-tabs__list" data-place-tabs-list></ul>
+      <button class="place-tabs__add" type="button" data-open-search
+              aria-label="Add a place">+</button>
+    </nav>
+
+    <nav class="site-nav" aria-label="Main">
+      <a class="site-nav__link" href="#/forecast" data-nav="forecast">Forecast</a>
+      <a class="site-nav__link" href="#/settings" data-nav="settings">Settings</a>
+
+      <!-- Two-state. The icon shows what a click gets you, and is replaced by
+           theme-toggle.js whenever the rendered theme changes. -->
+      <button class="theme-toggle" type="button" data-theme-toggle
+              aria-label="Switch to dark theme">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true" data-theme-icon>
+          <path d="M20.5 15A9 9 0 0 1 9 3.5 9 9 0 1 0 20.5 15z"/>
+        </svg>
+      </button>
+
+      <a class="site-nav__link site-nav__link--strong" href="#/signin"
+         data-auth-action>Sign in</a>
+    </nav>
+  </header>
+
+  <main id="main" data-screens>
+
+    <!-- ================================================================= -->
+    <!-- 01 · Landing — one claim, one live reading                        -->
+    <!-- ================================================================= -->
+    <section class="screen landing" id="screen-landing" data-screen="landing"
+             aria-labelledby="landing-claim">
+      <div class="landing__hero">
+        <h1 class="landing__claim" id="landing-claim" data-landing-claim>
+          Rain, to the quarter hour.
+        </h1>
+        <p class="landing__sub">
+          A forecast that answers the only question you asked.
+        </p>
+        <div class="landing__actions">
+          <a class="button button--primary" href="#/forecast">See a live forecast</a>
+          <a class="button button--quiet" href="#/signin">Create an account</a>
+        </div>
+      </div>
+
+      <div class="landing__reading" data-landing-reading>
+        <!-- Filled by render-landing.js with a real reading. -->
+      </div>
+
+      <!-- The proof strip: twelve bars and an axis, straight off the board.
+           Hidden until there is real data behind it. -->
+      <div class="landing__strip" data-landing-strip hidden>
+        <div class="landing__bars" data-landing-bars role="img" aria-label=""></div>
+        <p class="axis mono" data-landing-axis></p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- 02 · Forecast — minute bars · 12h · 5 days                        -->
+    <!-- ================================================================= -->
+    <section class="screen forecast" id="screen-forecast" data-screen="forecast"
+             aria-labelledby="forecast-place" hidden>
+
+      <!-- Announced politely: the whole region changes when a place is picked. -->
+      <div class="forecast__now" data-forecast-now aria-live="polite">
+        <p class="label" data-now-label></p>
+        <h1 class="reading" id="forecast-place" data-now-reading></h1>
+        <p class="forecast__condition" data-now-condition></p>
+        <p class="forecast__rain" data-now-rain></p>
+      </div>
+
+      <div class="forecast__icon" data-now-icon></div>
+
+      <section class="hourly" aria-labelledby="hourly-heading">
+        <!-- First in the DOM so it names the section, painted last (see the
+             `order` in _forecast.scss) so it reads as the board's caption.
+             Only one count is ever displayed, so only one is ever announced. -->
+        <h2 class="label" id="hourly-heading">Next
+          <span class="hourly__count-narrow">8</span><span
+                class="hourly__count-wide">12</span> hours · rain chance</h2>
+        <ol class="hourly__strip" data-hourly></ol>
+      </section>
+
+      <section class="rain-strip" aria-labelledby="rain-heading" data-rain-section>
+        <div class="rain-strip__bars" data-rain-bars role="img" data-rain-alt></div>
+
+        <!-- The board's caption row: what the strip is on the left, the moment
+             it changes in the middle, the horizon on the right. The heading is
+             the left mark, so it stays in the DOM order that names the section
+             and still lands where the board puts a caption. -->
+        <div class="axis rain-strip__axis mono">
+          <h2 class="label" id="rain-heading">Next 12 hours · rainfall</h2>
+          <span class="axis__change" data-rain-change></span>
+          <span>+12h</span>
+        </div>
+
+        <p class="rain-strip__note text-note" data-rain-note></p>
+      </section>
+
+      <section class="daily" aria-labelledby="daily-heading">
+        <h2 class="label" id="daily-heading">Next days</h2>
+        <ol class="daily__list" data-daily></ol>
+      </section>
+
+      <p class="metrics mono" data-metrics></p>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- 03 · Settings — every feature switchable                          -->
+    <!-- ================================================================= -->
+    <section class="screen settings" id="screen-settings" data-screen="settings"
+             aria-labelledby="settings-heading" hidden>
+      <h1 class="settings__title" id="settings-heading">Settings</h1>
+      <div data-settings-groups></div>
+      <p class="settings__account text-note" data-settings-account></p>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- 04 · Sign in — night panel, underline fields                      -->
+    <!-- ================================================================= -->
+    <section class="screen signin" id="screen-signin" data-screen="signin"
+             aria-labelledby="signin-heading" hidden>
+
+      <!-- The dark panel. The board runs it the full height of the screen and
+           splits it three ways: the mark at the top, the live reading in the
+           middle, and what the machine measured along the bottom. -->
+      <aside class="signin__panel" data-signin-panel>
+        <!-- The board puts the mark inside the panel, because this screen has
+             no header. It is the way back out, so it is a link. -->
+        <a class="signin__panel-mark" href="#/" data-nav-home>Cirro</a>
+
+        <div>
+          <p class="label" data-panel-label>Live</p>
+          <p class="reading reading--panel" data-panel-reading>—</p>
+          <p class="signin__panel-claim" data-panel-claim></p>
+        </div>
+
+        <p class="label" data-panel-metrics></p>
+      </aside>
+
+      <div class="signin__form-col">
+        <p class="signin__switch">
+          <span data-auth-switch-label>New here?</span>
+          <button class="link-button link-button--strong" type="button"
+                  data-auth-mode-toggle>Create an account</button>
+        </p>
+
+        <div class="signin__form-inner">
+          <h1 class="signin__title" id="signin-heading" data-auth-title>Welcome back</h1>
+
+          <form class="auth-form" data-auth-form novalidate>
+            <div class="field">
+              <label class="field__label label" for="auth-email">Email</label>
+              <input class="field__input" id="auth-email" name="email" type="email"
+                     autocomplete="email" placeholder="you@studio.com" required
+                     aria-describedby="auth-email-error">
+              <p class="field__error" id="auth-email-error" data-error-for="email"
+                 role="alert"></p>
+            </div>
+
+            <div class="field">
+              <label class="field__label label" for="auth-password">Password</label>
+              <!-- The board draws one continuous rule under the whole row, with
+                   SHOW sitting on it — not a rule that stops short of it. -->
+              <div class="field__row field__row--ruled">
+                <input class="field__input field__input--bare" id="auth-password"
+                       name="password" type="password" autocomplete="current-password"
+                       required minlength="6" aria-describedby="auth-password-error">
+                <button class="field__reveal label" type="button"
+                        data-toggle-password aria-pressed="false">Show</button>
+              </div>
+              <p class="field__error" id="auth-password-error" data-error-for="password"
+                 role="alert"></p>
+            </div>
+
+            <p class="auth-form__error" data-auth-error role="alert"></p>
+
+            <button class="button button--primary" type="submit" data-auth-submit>
+              Sign in
+            </button>
+            <div class="auth-form__links">
+              <button class="link-button" type="button" data-google-signin>
+                Continue with Google
+              </button>
+              <button class="link-button" type="button" data-forgot-password>
+                Forgot password
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- The global footer is hidden on this screen, so the attribution the
+             board keeps at the foot of every page lives here instead. -->
+        <p class="label signin__legal">
+          Cirro · 2026 ·
+          <a href="https://open-meteo.com" rel="noopener noreferrer" target="_blank">Open-Meteo</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile tab bar. The canvas moves navigation to the bottom below 420px,
+       where the header has no room for it. Hidden from `sm` up. -->
+  <nav class="tab-bar" aria-label="Screens">
+    <a class="tab-bar__tab" href="#/landing" data-nav="landing">Home</a>
+    <a class="tab-bar__tab" href="#/forecast" data-nav="forecast">Forecast</a>
+    <a class="tab-bar__tab" href="#/settings" data-nav="settings">Settings</a>
+  </nav>
+
+  <footer class="site-footer">
+    <p class="label">Cirro · 2026</p>
+    <p class="label">
+      Weather by
+      <a href="https://open-meteo.com" rel="noopener noreferrer" target="_blank">Open-Meteo</a>
+    </p>
+  </footer>
+
+  <!-- Search overlay: the combobox for adding a place. -->
+  <div class="search" data-search hidden>
+    <div class="search__backdrop" data-search-close></div>
+    <div class="search__panel" role="dialog" aria-modal="true"
+         aria-labelledby="search-label">
+      <label class="label" id="search-label" for="search-input">Add a place</label>
+      <input class="search__input" id="search-input" type="search"
+             autocomplete="off" placeholder="Search cities"
+             role="combobox" aria-expanded="false" aria-controls="search-results"
+             aria-autocomplete="list">
+      <button class="link-button search__locate" type="button" data-use-location>
+        Use my location
+      </button>
+      <ul class="search__results" id="search-results" role="listbox"
+          data-search-results></ul>
+      <p class="search__status text-note" data-search-status role="status"></p>
+    </div>
+  </div>
+
+  <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="src/js/main.js"></script>
+</body>
+</html>

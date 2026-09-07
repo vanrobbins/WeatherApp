@@ -1,0 +1,34 @@
+// =============================================================================
+// Cirro weather app — Sass entry point.
+//
+// The ONLY file compiled directly (see `npm run build`). Order here is the
+// cascade order; nothing else may @use a layer out of sequence.
+//
+// Uses @use / @forward throughout — @import is deprecated in Dart Sass and
+// a build warning here means a partial slipped back to the legacy syntax.
+// =============================================================================
+
+// 1. Abstracts — maps, functions, mixins. Emit no CSS.
+//    (Partials pull these in themselves via `@use '../abstracts' as *;`)
+
+// 2. Base — fonts, reset, theme tokens, element-level type.
+@use 'base/fonts';
+@use 'base/reset';
+@use 'base/theme';
+@use 'base/typography';
+@use 'base/motion';
+
+// 3. Layout — the page shell.
+@use 'layout/app-shell';
+@use 'layout/header';
+
+// 4. Components — one file per BEM block.
+@use 'components/forecast';
+@use 'components/landing';
+@use 'components/signin';
+@use 'components/settings';
+@use 'components/controls';
+@use 'components/search';
+
+// 5. Utilities — last, so they can override.
+@use 'utilities/utilities';

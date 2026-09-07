@@ -1,0 +1,49 @@
+@use '../abstracts' as *;
+
+// The page is bounded by the canvas gutter and nothing else. There are no
+// cards — "space does the work a border or a card would do elsewhere" — and
+// that has to include the page itself: a screen is the screen, not a 1180px
+// artboard centred inside one with paper showing down both sides.
+
+.screen {
+  display: block;
+  padding: var(--hero-top) var(--gutter) var(--section-gap);
+
+  &[hidden] { display: none; }
+}
+
+// The sign-in screen is the whole window. The board draws no header, footer or
+// tab bar on it — the mark inside the night panel is the only way back.
+body[data-route='signin'] {
+  .site-header,
+  .site-footer,
+  .tab-bar { display: none; }
+
+  main { min-height: 0; }
+}
+
+main {
+  // A sheet entering from the right sits outside the viewport until it lands,
+  // which would otherwise widen the document. `clip` rather than `hidden` so
+  // no scroll container is created and nothing here can be scrolled sideways.
+  overflow-x: clip;
+
+  // Reserve a full screen so the footer starts below the fold and doesn't ride
+  // up into the viewport on an empty/loading state — that pop-in was the app's
+  // only real layout shift. svh (not dvh) so the mobile URL bar hiding doesn't
+  // resize it and shift the page during scroll.
+  min-height: 100svh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(4);
+  justify-content: space-between;
+  padding: var(--section-gap) var(--gutter) space(8);
+  border-top: 1px solid var(--rule);
+  padding-bottom: calc(#{space(8)} + env(safe-area-inset-bottom));
+
+  a { color: var(--ink-muted); }
+}

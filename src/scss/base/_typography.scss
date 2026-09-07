@@ -1,0 +1,35 @@
+@use '../abstracts' as *;
+
+// Element-level type only. Anything component-specific lives with its block.
+
+h1 { @include display; }
+
+h2 {
+  font-size: var(--size-row);
+  font-weight: $weight-medium;
+  line-height: 1.2;
+}
+
+p { text-wrap: pretty; }
+
+// Body copy never exceeds the canvas measure of 28em.
+p, li { max-width: var(--measure); }
+
+small,
+.text-note {
+  font-size: var(--size-row-note);
+  color: var(--ink-muted);
+}
+
+// Anything a machine measured: temperatures, wind, timestamps, axis labels.
+// Tabular figures keep columns from jittering as values update.
+.mono {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+// "Underline means input." The system has no boxed fields.
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}

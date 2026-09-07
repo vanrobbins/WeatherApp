@@ -1,0 +1,136 @@
+// =============================================================================
+// Cirro — theme
+//
+// The single place any colour is defined. Components reference var(--…) and
+// never a literal. Light is the default; dark overrides only what changes.
+//
+// From the canvas: "Two grounds, one ink family, one accent.
+// Amber only ever means sun."
+//
+// Measured contrast on paper (#faf8f5), verified rather than assumed:
+//   ink        #1a1714  16.84:1  ✓ AA
+//   ink-muted  #6b7280   4.56:1  ✓ AA  (the floor for body copy)
+//   ink-quiet  #8c857a   3.44:1  ✗ AA  — never body text, per the canvas
+// =============================================================================
+
+@use '../abstracts' as *;
+
+:root {
+  color-scheme: light;
+
+  // -- Ground ---------------------------------------------------------------
+  --ground:        #faf8f5;   // paper. never a gradient, never condition-tinted
+  --ground-invert: #141210;   // the sign-in panel in light theme
+
+  // -- Ink ------------------------------------------------------------------
+  --ink:       #1a1714;       // readings, headings, primary fill
+  --ink-muted: #6b7280;       // labels, secondary copy, unselected states
+  --ink-quiet: #8c857a;       // mid data tint, secondary icons — NOT body text
+  --ink-on-invert: #f2efea;
+
+  // -- Lines and states -----------------------------------------------------
+  --rule:      #e6e3de;       // every hairline, 1px. also an empty range bar
+  --track-off: #d9d5ce;       // toggle track, off — the only grey that is a state
+
+  // -- Accent ---------------------------------------------------------------
+  // Sun disc, rays, bolt, a sunny day's range bar. Nothing else, ever.
+  --sun: #e8b03c;
+
+  // -- Data ramp ------------------------------------------------------------
+  // Ordered dark → light for bar charts and the rain-chance strip.
+  --ramp-1: #1a1714;
+  --ramp-2: #8c857a;
+  --ramp-3: #cfcac2;
+  --ramp-4: #e6e3de;
+
+  // -- Space and type (fluid, per the canvas) -------------------------------
+  // The canvas gives exact values at its two reference widths, 390 and 1180.
+  // Those are viewport widths, not the width of a box sitting inside one, so
+  // the scale is expressed as a ratio of the viewport and simply keeps holding
+  // above 1180 — 88/1180 is 7.46vw, 104/1180 is 8.81vw, and so on. Reading it
+  // as a fixed 1180 container was what made every screen look like an artboard
+  // floating on the page instead of being the page.
+  --gutter:      clamp(28px, 7.46vw, 176px);
+  --hero-top:    clamp(64px, 8.81vw, 104px);
+  --section-gap: clamp(52px, 6.44vw, 76px);
+  --hour-bar-h:  clamp(66px, 7.46vw, 88px);
+
+  --row-pad-y:   18px;
+  --row-min:     60px;
+  --indent:      #{$indent-mobile};
+  --measure:     28em;
+  --form-col:    100%;
+
+  // Type rides the same curve: 110px at 390 growing to the canvas's 168px by
+  // 1180, rather than jumping a size at a single breakpoint.
+  --size-reading:  clamp(#{type-size('reading', 'mobile')}, 14.24vw, #{type-size('reading')});
+  --size-display:  clamp(#{type-size('display', 'mobile')}, 7.12vw, #{type-size('display')});
+
+  // The small sizes step instead: a 1px change is imperceptible mid-resize and
+  // fluid values there only cost sub-pixel rendering.
+  --size-row:      #{type-size('row', 'mobile')};
+  --size-row-note: #{type-size('row-note', 'mobile')};
+  --size-label:    #{type-size('label', 'mobile')};
+  --size-segment:  #{type-size('segment', 'mobile')};
+
+  // -- Motion ---------------------------------------------------------------
+  --dur-transition: #{motion('transition')};
+  --dur-bar-rise:   #{motion('bar-rise')};
+  --ease-rise:      #{$ease-rise};
+}
+
+// What is left to step at the canvas's desktop width: the handful of values
+// where a ratio would be false precision.
+@include respond-to('xl') {
+  :root {
+    --row-pad-y: #{space(5)};    // 20px
+    --indent:    #{$indent-desktop};
+
+    --size-row:      #{type-size('row')};
+    --size-row-note: #{type-size('row-note')};
+    --size-label:    #{type-size('label')};
+    --size-segment:  #{type-size('segment')};
+
+    --form-col: 340px;
+  }
+}
+
+// -- Dark ---------------------------------------------------------------------
+// Only the ground, ink and ramp move. The rules, the accent and every spacing
+// and type token are shared, so dark is a palette swap and not a second design.
+//
+// Written as a mixin so the same declarations serve both the system preference
+// and an explicit user toggle without being duplicated by hand.
+@mixin cirro-dark {
+  color-scheme: dark;
+
+  --ground:        #141210;
+  --ground-invert: #faf8f5;
+
+  --ink:           #f2efea;
+  --ink-muted:     #9c968c;   // lifted from the light value to hold AA on ink-dark
+  --ink-quiet:     #8c857a;
+  --ink-on-invert: #1a1714;
+
+  --rule:      #332f2a;
+  --track-off: #4a453e;
+
+  --ramp-1: #f2efea;
+  --ramp-2: #8c857a;
+  --ramp-3: #4a453e;
+  --ramp-4: #332f2a;
+}
+
+// Default ("system") setting: no attribute on the root, so only the media query
+// separates light from dark. Guarded so an explicit light choice still wins.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) { @include cirro-dark; }
+}
+
+// Explicit choice — beats the media query in both directions.
+:root[data-theme='dark'] { @include cirro-dark; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+}

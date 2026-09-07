@@ -1,0 +1,77 @@
+@use '../abstracts' as *;
+
+// Every feature switchable, one column, 660px measure.
+// Dependent rows indent and dim to 40% when their parent is off — never hidden.
+
+.settings {
+  &__title {
+    font-size: clamp(30px, 5vw, 46px);
+    font-weight: $weight-display;
+    letter-spacing: $tracking-display;
+  }
+
+  &__group {
+    max-width: 660px;
+    margin-top: var(--section-gap);
+  }
+
+  &__group-title {
+    padding-bottom: space(4);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  &__empty {
+    // The base prose measure would stop this row's rule short of the group.
+    max-width: none;
+    padding-block: var(--row-pad-y);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  &__account {
+    max-width: 660px;
+    margin-top: var(--section-gap);
+    padding-top: space(5);
+    border-top: 1px solid var(--rule);
+  }
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(6);
+  min-height: var(--row-min);
+  padding-block: var(--row-pad-y);
+  border-bottom: 1px solid var(--rule);
+
+  &__text { min-width: 0; }
+
+  &__name { font-size: var(--size-row); }
+
+  &__note {
+    margin-top: space(1);
+    font-size: var(--size-row-note);
+    color: var(--ink-muted);
+  }
+
+  // The mark on a stated rule. Sits in the control column so the row still
+  // scans as a row, in mono because it is a fact rather than an offer.
+  &__fixed {
+    flex: none;
+    // ink-quiet is 3.44:1 on paper and the canvas forbids it for text; the
+    // muted tone is the documented floor for anything that has to be read.
+    color: var(--ink-muted);
+  }
+
+  // A dependent control. Indented, and dimmed rather than removed, so the
+  // relationship stays visible when the parent is off.
+  &--child {
+    padding-left: var(--indent);
+  }
+
+  &--disabled {
+    opacity: 0.4;
+    // Pointer events stay on so the row is still readable and focusable;
+    // the control itself carries aria-disabled.
+  }
+}

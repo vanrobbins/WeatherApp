@@ -1,0 +1,15 @@
+node_modules/
+
+# Design-canvas extraction, verification scripts and screenshots.
+# Derived from the Cirro artifact — regenerable, and large.
+.canvas/
+
+# Sass build artifacts
+.sass-cache/
+*.css.map
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

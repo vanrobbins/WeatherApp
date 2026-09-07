@@ -1,0 +1,72 @@
+@use '../abstracts' as *;
+
+// One claim, one live reading.
+
+.landing {
+  &__claim {
+    @include display;
+    max-width: 14em;
+  }
+
+  &__sub {
+    margin-top: space(8);
+    max-width: 26em;
+    font-size: var(--size-row);
+    line-height: 1.7;
+    color: var(--ink-muted);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: space(6);
+    margin-top: space(13);
+  }
+
+  &__reading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: space(8);
+    margin-top: var(--section-gap);
+    padding-top: var(--section-gap);
+    border-top: 1px solid var(--rule);
+
+    svg { color: var(--ink); width: clamp(96px, 24vw, 200px); height: auto; }
+  }
+
+  &__reading-condition {
+    margin-top: space(6);
+    font-size: var(--size-row);
+    color: var(--ink-muted);
+  }
+
+  // The proof strip. The board puts twelve bars and an axis directly under the
+  // live reading — it is the whole argument for the product, made in about an
+  // inch of page, and the landing shipped without it.
+  &__strip {
+    margin-top: var(--section-gap);
+  }
+
+  &__bars {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 5px;
+    align-items: end;
+    height: 58px;
+
+    @include respond-to('lg') {
+      gap: 6px;
+      height: 78px;
+    }
+  }
+
+  &__bar {
+    background: var(--ramp-4);
+    // Even an empty hour has to sit on the axis as a bar.
+    min-height: 3px;
+    @include bar-rise;
+    @include ramp-modifiers;
+  }
+}

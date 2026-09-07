@@ -1,0 +1,139 @@
+@use '../abstracts' as *;
+
+// Night panel, underline fields, reading above the form.
+//
+// This screen is a full-bleed takeover: the board's sign-in artboard has no
+// header, no footer and no tab bar, and the panel runs flush to the edge on
+// every side. The shell hides its own chrome here (see the [data-route] rules
+// in layout/_app-shell.scss) and the mark inside the panel is the way back out.
+
+.signin {
+  display: grid;
+  gap: 0;
+  // Zero, not the page gutter — the panel has to reach the edge. The form
+  // column carries its own padding instead.
+  padding: 0;
+  min-height: 100svh;
+
+  @include respond-to('lg') {
+    // Board: a 520px panel beside the form, both running the full height.
+    grid-template-columns: minmax(0, 520px) 1fr;
+    align-items: stretch;
+  }
+
+  // The panel is the inverted ground in BOTH themes — in light it is the night
+  // ground, in dark it is paper. Its own ink flips with it, so the text inside
+  // never has to be re-specified per theme.
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    // Mark at the top, reading in the middle, measurements along the bottom.
+    justify-content: space-between;
+    gap: space(10);
+    background: var(--ground-invert);
+    color: var(--ink-on-invert);
+    padding: space(7);
+    padding-top: calc(#{space(7)} + env(safe-area-inset-top));
+
+    @include respond-to('lg') {
+      min-height: 660px;   // the board's panel height
+      padding: space(11);
+      padding-top: space(11);
+    }
+
+    .label { color: currentColor; opacity: 0.6; }
+    .reading { color: currentColor; }
+  }
+
+  &__panel-mark {
+    align-self: flex-start;
+    font-size: 14px;
+    font-weight: $weight-strong;
+    text-decoration: none;
+
+    @include respond-to('lg') { font-size: 13px; }
+  }
+
+  // Board: 26px at weight 300 — the claim is the second-largest thing on the
+  // panel, not a caption under the temperature.
+  &__panel-claim {
+    margin-top: space(7);
+    max-width: 320px;
+    font-size: clamp(19px, 2vw, 26px);
+    font-weight: $weight-display;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  &__title {
+    margin-top: 0;
+    font-size: clamp(30px, 5vw, 46px);
+    font-weight: $weight-display;
+    letter-spacing: $tracking-display;
+    line-height: 1.05;
+  }
+
+  // Board: a full-height column with the mode switch pinned top-right, the
+  // form optically centred beneath it, and the fine print on the floor.
+  &__form-col {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: none;
+    padding: space(11) var(--gutter) space(13);
+
+    @include respond-to('lg') { padding: space(11) space(22); }
+  }
+
+  // "New here? Create an account". The board pairs the question and the action
+  // on one line — top-right on desktop, under the form on mobile — rather than
+  // stranding the action among the secondary links.
+  &__switch {
+    display: flex;
+    align-items: baseline;
+    gap: space(2);
+    font-size: var(--size-row-note);
+    color: var(--ink-muted);
+
+    @include respond-to('lg') { justify-content: flex-end; }
+  }
+
+  &__form-inner {
+    width: 100%;
+    max-width: var(--form-col);
+
+    // `auto` on both sides is what centres it in the leftover height.
+    @include respond-to('lg') {
+      margin-block: auto;
+      max-width: 340px;
+    }
+  }
+
+  &__legal {
+    margin-top: space(13);
+
+    @include respond-to('lg') { margin-top: space(10); }
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;              // canvas: fields 30px apart
+  margin-top: space(10);
+
+  &__error {
+    margin: 0;
+    min-height: 1.2em;
+    font-size: var(--size-row-note);
+    color: var(--ink);
+    &:empty { min-height: 0; }
+  }
+
+  &__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: space(4);
+  }
+}

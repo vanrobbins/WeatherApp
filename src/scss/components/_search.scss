@@ -1,0 +1,104 @@
+@use '../abstracts' as *;
+
+.search {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: space(8) space(4);
+
+  &[hidden] { display: none; }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--ground);
+    opacity: 0.94;
+  }
+
+  &__panel {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    margin-top: 8vh;
+    padding: space(8);
+    background: var(--ground);
+    border: 1px solid var(--rule);
+  }
+
+  &__input {
+    width: 100%;
+    min-height: 44px;
+    margin-top: space(3);
+    padding: space(2) 0;
+    font-size: clamp(20px, 4vw, 30px);
+    font-weight: $weight-display;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+
+    &::placeholder { color: var(--ink-quiet); }
+    &:focus { outline: none; border-bottom-color: var(--ink); }
+  }
+
+  &__locate {
+    margin-top: space(3);
+    min-height: 44px;   // a comfortable tap target on a phone
+  }
+
+  &__results {
+    margin-top: space(4);
+    max-height: 46vh;
+    overflow-y: auto;
+  }
+
+  &__option {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: space(4);
+    min-height: 44px;
+    padding-block: space(3);
+    border-bottom: 1px solid var(--rule);
+    cursor: pointer;
+
+    &:last-child { border-bottom: 0; }
+
+    // Keyboard focus and hover share one state, and it is the same "this one"
+    // mark the rest of the app uses: weight, not a rule under the word.
+    &[aria-selected='true'],
+    &:hover {
+      .search__name { font-weight: $weight-strong; }
+    }
+  }
+
+  &__name { font-size: var(--size-row); }
+
+  &__region {
+    font-family: $font-mono;
+    font-size: var(--size-label);
+    letter-spacing: $tracking-label;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    text-align: right;
+  }
+
+  &__status { margin-top: space(4); }
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(#{space(6)} + env(safe-area-inset-bottom));
+  z-index: 60;
+  transform: translateX(-50%);
+  max-width: min(92vw, 480px);
+  padding: space(4) space(6);
+  background: var(--ink);
+  color: var(--ground);
+  font-size: var(--size-row-note);
+
+  &[hidden] { display: none; }
+}

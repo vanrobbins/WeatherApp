@@ -1,0 +1,343 @@
+@use '../abstracts' as *;
+
+// The forecast screen: reading, icon, hourly, rain strip, days, metrics.
+// One column on mobile; the reading and icon sit side by side from `lg`.
+
+.forecast {
+  position: relative;
+
+  &__now { max-width: 100%; }
+
+  &__condition {
+    margin-top: space(5);
+    font-size: var(--size-row);
+    color: var(--ink-muted);
+  }
+
+  // The claim, with the board's live ring against it. This is the one line on
+  // the screen that goes stale by itself, so it is the one line that says so.
+  &__rain {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: space(3);
+    font-size: var(--size-row);
+    color: var(--ink);
+  }
+
+  &__icon {
+    margin-top: space(8);
+
+    // On desktop the icon sits opposite the reading rather than beneath it.
+    @include respond-to('lg') {
+      position: absolute;
+      top: var(--hero-top);
+      right: var(--gutter);
+      margin-top: 0;
+    }
+
+    svg { width: clamp(96px, 26vw, 200px); height: auto; color: var(--ink); }
+  }
+}
+
+// -- The hero temperature -----------------------------------------------------
+
+.reading {
+  @include reading;
+  margin: 0;
+
+  // Board: 132px on the desktop panel, 96px on mobile.
+  &--panel {
+    font-size: clamp(72px, 9vw, 132px);
+    line-height: 0.84;
+  }
+}
+
+// -- Metrics footer -----------------------------------------------------------
+// "18 KM/H · 81% · UV 2 · SUNSET 19:48"
+
+.metrics {
+  margin-top: var(--section-gap);
+  padding-top: space(5);
+  border-top: 1px solid var(--rule);
+  font-size: var(--size-label);
+  letter-spacing: $tracking-label;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  max-width: none;
+}
+
+// -- Hourly strip -------------------------------------------------------------
+// Board 01/02: each hour is a column of temperature, a rain-chance bar and the
+// hour, and the caption sits UNDER the data, not above it. The bar is the point
+// of the block — the caption reads "NEXT 12 HOURS · RAIN CHANCE" — so the
+// weather icon that used to occupy that slot has gone back to the day rows,
+// which is the only place the board draws one at this size.
+
+.hourly {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--section-gap);
+
+  // The heading stays first in the DOM so it still names the section for a
+  // screen reader; only its painted position moves below the bars.
+  > h2 { order: 2; margin-top: space(4); }
+
+  &__strip {
+    order: 1;
+    display: grid;
+    // Board: eight columns at 390, twelve at 1180. Cells past the eighth are
+    // dropped rather than scrolled — the board draws no scroll affordance, and
+    // a grid keeps the first cell aligned to the gutter at every width.
+    grid-template-columns: repeat(8, 1fr);
+    gap: 9px;
+    align-items: end;
+
+    @include respond-to('lg') {
+      grid-template-columns: repeat(12, 1fr);
+      gap: space(3);
+    }
+  }
+
+  &__hour {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    max-width: none;   // as above: a column of chart, not a line of prose
+
+    @include respond-to('lg') { gap: space(3); }
+
+    // Hours 9-12 exist in the DOM at every width so the caption and the
+    // accessible list stay in step; the narrow grid simply doesn't paint them.
+    // A selected day shows all 24 at every width, so the rule lifts there.
+    &:nth-child(n + 9) {
+      display: none;
+      @include respond-to('lg') { display: flex; }
+    }
+  }
+
+
+  &__temp {
+    font-family: $font-mono;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    @include respond-to('lg') { font-size: 13px; }
+  }
+
+  // The column the bar stands in. Fixed height so every bar shares a baseline
+  // and the row of temperatures above it stays level.
+  &__track {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    height: var(--hour-bar-h);
+  }
+
+  &__bar {
+    width: 100%;
+    background: var(--ramp-4);
+    @include bar-rise;
+    @include ramp-modifiers;
+  }
+
+  &__label {
+    font-family: $font-mono;
+    font-size: var(--size-label);
+    letter-spacing: $tracking-label;
+    color: var(--ink-muted);
+  }
+
+  // "NEXT 12 HOURS" on the wide grid, "NEXT 8 HOURS" on the narrow one — the
+  // caption has to agree with the number of columns actually painted.
+  &__count-wide { display: none; }
+
+  @include respond-to('lg') {
+    &__count-narrow { display: none; }
+    &__count-wide { display: inline; }
+  }
+
+  // -- A day opened from the list below --------------------------------------
+  // Twenty-four columns is more than a phone can show at a readable width, so
+  // the strip scrolls inside itself there. The page still never scrolls
+  // sideways; only this block does.
+  &--day &__strip {
+    grid-template-columns: repeat(24, minmax(26px, 1fr));
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    padding-bottom: space(2);
+
+    &::-webkit-scrollbar { display: none; }
+
+    @include respond-to('lg') {
+      grid-template-columns: repeat(24, 1fr);
+      gap: 6px;
+      overflow-x: visible;
+    }
+  }
+
+  &--day &__hour:nth-child(n + 9) { display: flex; }
+
+  // 24 labels in a row is a lot of ink; every third hour is enough to read the
+  // axis by, and the rest stay available to a screen reader.
+  &--day &__hour:not(:nth-child(3n + 1)) &__label { visibility: hidden; }
+}
+
+// -- Rain-chance strip --------------------------------------------------------
+// One bar per 15-minute step. Amber is reserved for sun, so intensity is
+// carried by the board's four-step data ramp instead of by hue: heaviest on
+// ink, lightest on the rule colour, which is also what an empty bar is drawn in.
+
+.rain-strip {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--section-gap);
+
+  &__bars {
+    order: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 78px;
+  }
+
+  &__bar {
+    flex: 1 1 0;
+    // A dry bar still has to read as a bar sitting on an axis, not as a
+    // rendering failure — hence a visible floor rather than a hairline.
+    min-height: 6px;
+    background: var(--rule);
+    @include bar-rise;
+    @include ramp-modifiers;
+  }
+
+  // Board pattern: the caption and the axis marks share one line under the
+  // data — caption left, the moment it changes in the middle, the horizon
+  // right. The h2 is the left mark, so it needs no separate row of its own.
+  &__axis { order: 2; margin-top: space(4); }
+
+  &__note { order: 3; margin-top: space(4); }
+}
+
+// The board's axis row: a mono line under a strip, ends pushed apart, with the
+// moment the story changes called out in the middle.
+.axis {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: space(4);
+  margin-top: space(3);
+  font-family: $font-mono;
+  font-size: var(--size-label);
+  letter-spacing: $tracking-label;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  max-width: none;
+
+  &__change { color: var(--ink); }
+}
+
+// -- Days ---------------------------------------------------------------------
+// Board grid: name, icon, range bar, temperatures. The range bar is the column
+// that was missing — without it the row is a label and two numbers, and the
+// week reads as a list instead of a shape.
+
+.daily {
+  margin-top: var(--section-gap);
+
+  &__list {
+    margin-top: space(3);
+
+    // The row is a grid, not a line of prose; the base `li` measure would cap
+    // it the same way it capped the row itself.
+    li { max-width: none; }
+  }
+
+  // The whole row is the control that opens that day's 24 hours.
+  &__row {
+    width: 100%;
+    text-align: left;
+    display: grid;
+    // The base type layer caps every `li` at the 28em prose measure. A day row
+    // is a chart, not prose, and the cap was squeezing a 1004px row into 448.
+    max-width: none;
+    // Board: 70/24/1fr/66 at 390, 110/34/1fr/80 at 1180.
+    grid-template-columns: 70px 24px 1fr 66px;
+    align-items: center;
+    gap: 14px;
+    min-height: var(--row-min);
+    padding-block: var(--row-pad-y);
+    // The board rules the TOP of every row, so the list opens on a hairline
+    // and closes on white space.
+    border-top: 1px solid var(--rule);
+    transition: opacity 120ms linear;
+
+    &:hover .daily__day { color: var(--ink); }
+    &:focus-visible { @include focus-ring; outline-offset: -2px; }
+
+    @include respond-to('lg') {
+      grid-template-columns: 110px 34px 1fr 80px;
+      gap: 22px;
+    }
+  }
+
+  &__day { font-size: var(--size-row); }
+
+  // Every day but today is muted; today carries the ink.
+  &__row:not(:first-child) &__day { color: var(--ink-muted); }
+
+  // The open day takes the same mark the system gives every other active
+  // thing — ink at weight 500. There is no other selected-state vocabulary
+  // in this design, and inventing one for a list row would be a new idea.
+  &__row--selected &__day,
+  &__row--selected:not(:first-child) &__day {
+    color: var(--ink);
+    font-weight: $weight-strong;
+  }
+
+  &__icon { color: var(--ink-quiet); }
+  &__row:first-child &__icon { color: var(--ink); }
+
+  // The week's temperature range, drawn once as a track and once as the slice
+  // of it this day actually occupies.
+  &__range {
+    position: relative;
+    height: 2px;
+    background: var(--rule);
+  }
+
+  &__span {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--from, 0%);
+    width: var(--width, 0%);
+    background: var(--ink);
+
+    // Amber means sun and nothing else — and a clear day's range bar is the
+    // one non-icon place the board spends it.
+    &--clear { background: var(--sun); }
+    &--cloud { background: var(--ink-quiet); }
+  }
+
+  &__temps {
+    font-family: $font-mono;
+    font-size: var(--size-row-note);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    justify-self: end;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  &__low { color: var(--ink-muted); }
+
+  // With the range bar hidden the row falls back to three columns rather than
+  // leaving a dead gap where the bar was.
+  &--no-ranges &__row {
+    grid-template-columns: 70px 24px 1fr;
+    @include respond-to('lg') { grid-template-columns: 110px 34px 1fr; }
+  }
+}

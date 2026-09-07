@@ -1,0 +1,29 @@
+@use '../abstracts' as *;
+
+// The board's most repeated typographic element: mono, uppercase, tracked out,
+// muted — "IBM Plex Mono carries anything a machine measured". The mixin
+// existed and eight elements in index.html already asked for the class, but
+// nothing ever emitted the rule, so every one of them was silently falling
+// back to sentence-case sans.
+.label { @include label; }
+
+.visually-hidden { @include visually-hidden; }
+
+// Skip link — visible only once focused.
+.skip-link {
+  @include visually-hidden;
+
+  &:focus-visible {
+    position: fixed;
+    top: space(2);
+    left: space(2);
+    z-index: 100;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: space(3) space(4);
+    clip-path: none;
+    background: var(--ink);
+    color: var(--ground);
+  }
+}

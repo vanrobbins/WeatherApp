@@ -1,0 +1,156 @@
+@use '../abstracts' as *;
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(4);
+  padding: space(6) var(--gutter);
+  padding-top: calc(#{space(6)} + env(safe-area-inset-top));
+  // The header is one row at every width — it must never wrap.
+  flex-wrap: nowrap;
+
+  &__mark {
+    font-size: 15px;
+    font-weight: $weight-strong;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  margin-left: auto;
+  flex-shrink: 0;
+
+  @include respond-to('md') { gap: space(8); }
+
+  // Below 420px the screen links move to the bottom tab bar; the theme
+  // toggle and sign-in stay in the header.
+  @media (max-width: 419px) {
+    [data-nav] { display: none; }
+  }
+
+  &__link {
+    font-size: var(--size-row-note);
+    color: var(--ink-muted);
+    text-decoration: none;
+    // 44px tap target without visually padding the text.
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    // At 390px "Sign in" wrapped onto two lines and pushed the header taller.
+    white-space: nowrap;
+
+    &--strong { color: var(--ink); font-weight: $weight-medium; }
+    &:hover { color: var(--ink); }
+
+    // Where you are is weight, not a rule under the word. Ink at 600 against
+    // muted 400 is unmistakable at a glance and adds no furniture to a design
+    // that has no pills, no fills and no boxes anywhere else.
+    &[aria-current='page'] {
+      color: var(--ink);
+      font-weight: $weight-strong;
+    }
+  }
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--ink);
+}
+
+// -- Saved places, as tabs in the header -------------------------------------
+// The canvas shows saved cities as header tabs rather than a separate list.
+
+.place-tabs {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  min-width: 0;
+
+  &[hidden] { display: none; }
+
+  &__list {
+    display: flex;
+    align-items: center;
+    gap: space(4);
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    white-space: nowrap;
+    font-size: var(--size-row-note);
+    color: var(--ink-muted);
+
+    &--active {
+      color: var(--ink);
+      font-weight: $weight-strong;
+    }
+  }
+
+  &__add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 18px;
+    color: var(--ink-muted);
+    &:hover { color: var(--ink); }
+  }
+}
+
+// -- Mobile tab bar -----------------------------------------------------------
+// The canvas moves navigation to the bottom on the 390px artboard. Above 420px
+// the header carries it instead and this disappears entirely.
+
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  background: var(--ground);
+  border-top: 1px solid var(--rule);
+  padding-bottom: env(safe-area-inset-bottom);
+
+  @include respond-to('sm') { display: none; }
+
+  &__tab {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    font-family: $font-mono;
+    font-size: var(--size-label);
+    letter-spacing: $tracking-label;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-muted);
+
+    &[aria-current='page'] {
+      color: var(--ink);
+      font-weight: $weight-strong;
+    }
+  }
+}
+
+// The fixed bar would otherwise cover the end of the page.
+@media (max-width: 419px) {
+  .site-footer { padding-bottom: calc(52px + env(safe-area-inset-bottom) + #{space(8)}); }
+}

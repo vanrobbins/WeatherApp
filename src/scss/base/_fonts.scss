@@ -1,0 +1,36 @@
+// =============================================================================
+// Self-hosted web fonts.
+//
+// Served from our own /fonts rather than Google's CDN: no third-party request,
+// no render-blocking external stylesheet, and — with the woff2 preloaded in the
+// document head — the face is ready close to first paint, so the swap no longer
+// shifts the layout. Only the latin subset is shipped; other scripts fall back
+// to the system stack in the token definitions.
+//
+// Plus Jakarta Sans is a variable font: one file covers the whole 300–700 range
+// the design uses (see $weight-* in abstracts/_tokens.scss).
+// =============================================================================
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: optional;
+  src: url('../fonts/plus-jakarta-sans.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url('../fonts/ibm-plex-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: optional;
+  src: url('../fonts/ibm-plex-mono-500.woff2') format('woff2');
+}

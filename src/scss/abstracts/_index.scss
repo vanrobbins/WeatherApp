@@ -1,0 +1,6 @@
+// Forwarded so partials can pull the whole abstract layer in one line:
+//   @use '../abstracts' as *;
+// Nothing here emits CSS.
+
+@forward 'tokens';
+@forward 'mixins';

@@ -1,0 +1,131 @@
+// =============================================================================
+// Cirro — design tokens
+//
+// Extracted from the Cirro design canvas (v1, September 2026).
+// Sass-level values only: maps, scales, and breakpoints. Anything a component
+// references at runtime is a CSS custom property, defined in base/_theme.scss.
+//
+// Three system rules from the canvas that this file encodes structurally:
+//   - Radius zero, no shadows. There is no radius or shadow scale here on purpose.
+//   - Amber (`sun`) means sun and nothing else. It is not a UI accent.
+//   - Paper is never a gradient and never tinted per condition.
+// =============================================================================
+
+@use 'sass:map';
+@use 'sass:list';
+
+// -- Breakpoints -------------------------------------------------------------
+// The canvas specifies two reference widths: mobile 390, desktop 1180.
+// Everything is authored mobile-first and steps up at `lg`.
+
+$breakpoints: (
+  'sm': 480px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1180px,   // the canvas desktop artboard width
+);
+
+// -- Space -------------------------------------------------------------------
+// Base 4px. Per the canvas: "Space does the work a border or a card would do
+// elsewhere" — which is why there is no card/shadow vocabulary in this system.
+
+$space-base: 4px;
+
+// One canvas value sits off the 4px grid: the nested-row indent is specified as
+// 26px desktop / 20px mobile. Kept exactly as drawn rather than rounded to 24 or
+// 28 — it aligns the indent with the row label's optical start, and "nudged to
+// match the grid" is how a design quietly stops matching its mockup.
+$indent-desktop: 26px;
+$indent-mobile:  20px;
+
+$space: (
+  0:  0,
+  1:  4px,
+  2:  8px,
+  3:  12px,
+  4:  16px,
+  5:  20px,
+  6:  24px,
+  7:  28px,
+  8:  32px,
+  10: 40px,
+  11: 44px,
+  13: 52px,
+  16: 64px,
+  19: 76px,
+  22: 88px,
+  26: 104px,
+);
+
+@function space($step) {
+  @if not map.has-key($space, $step) {
+    @error 'Unknown space step `#{$step}`. Available: #{map.keys($space)}.';
+  }
+  @return map.get($space, $step);
+}
+
+// -- Type --------------------------------------------------------------------
+// "Plus Jakarta Sans carries language. IBM Plex Mono carries anything a machine
+// measured." Every temperature, wind speed, timestamp and axis label is mono.
+
+$font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+$font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
+
+// (desktop, mobile) pairs exactly as specified on the canvas.
+$type: (
+  'reading':  (168px, 110px),   // the hero temperature
+  'display':  (84px,  46px),    // headline
+  'row':      (16px,  15px),    // body / list rows
+  'row-note': (13px,  12.5px),  // secondary row copy
+  'label':    (10px,  9.5px),   // mono label, uppercase
+  // The segmented control is the one place the board sets mono a step up from
+  // the label token — 500 weight at 11px, so a chosen option holds its own
+  // against the 16px row name sitting beside it.
+  'segment':  (11px,  10.5px),
+);
+
+@function type-size($name, $viewport: 'desktop') {
+  $pair: map.get($type, $name);
+  @if $pair == null {
+    @error 'Unknown type role `#{$name}`. Available: #{map.keys($type)}.';
+  }
+  @if $viewport == 'desktop' {
+    @return list.nth($pair, 1);
+  }
+  @return list.nth($pair, 2);
+}
+
+// Weights — the system runs light. 300 for anything large, 400 for text.
+$weight-reading: 300;
+$weight-display: 300;
+$weight-body:    400;
+$weight-medium:  500;
+$weight-strong:  600;
+
+// Tracking. Large type tightens hard; mono labels open up.
+$tracking-reading: -0.06em;
+$tracking-display: -0.045em;
+$tracking-label:    0.08em;
+
+// -- Motion ------------------------------------------------------------------
+// Ambient loops keep icons live; transitions borrow direction from the weather.
+// Every one of these is disabled wholesale under prefers-reduced-motion:
+// "loops hold frame 1, transitions cut."
+
+$ease-rise: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+$motion: (
+  'sun-spin':    28s,
+  'cloud-drift': 9s,
+  'rain-fall':   1.6s,
+  'bolt-flash':  3.4s,
+  'live-ring':   2.4s,
+  'bar-rise':    800ms,
+  'transition':  1.2s,
+);
+
+$bar-rise-stagger: 40ms;
+
+@function motion($name) {
+  @return map.get($motion, $name);
+}

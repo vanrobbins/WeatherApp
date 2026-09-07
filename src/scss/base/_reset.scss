@@ -1,0 +1,56 @@
+@use '../abstracts' as *;
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;   // dvh, not vh — mobile browser chrome must not clip
+  font-family: $font-sans;
+  font-size: var(--size-row);
+  font-weight: $weight-body;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+h1, h2, h3, h4, p, figure, blockquote { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+img, svg { display: block; max-width: 100%; }
+
+// The system has no radius and no shadows, so controls are reset all the way
+// down and rebuilt from the type and rule tokens instead.
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+}
+
+button { cursor: pointer; }
+
+:focus-visible { @include focus-ring; }
+:focus:not(:focus-visible) { outline: none; }
+
+// Screen headings are focused programmatically on navigation so screen readers
+// announce the new screen. That is not a keyboard focus the user initiated, and
+// Chrome still matches :focus-visible for it — which drew a full-width box
+// around the hero temperature. Suppress the ring only for these targets; every
+// genuinely interactive element keeps its own.
+[tabindex='-1']:focus,
+[tabindex='-1']:focus-visible { outline: none; }
+
+// "Loops hold frame 1, transitions cut."
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
